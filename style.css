@@ -1,0 +1,210 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #1a1a1a;
+    font-family: 'Courier New', Courier, monospace;
+    color: white;
+    user-select: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    background-color: #000;
+    display: block;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allow clicks to pass through to canvas unless on UI element */
+}
+
+/* Screens and UI Elements */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    z-index: 100;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#start-btn {
+    padding: 15px 30px;
+    font-size: 24px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+#start-btn:hover {
+    background-color: #45a049;
+}
+
+/* HUD */
+#hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    pointer-events: none;
+}
+
+#player-health-bar-container {
+    width: 300px;
+    height: 30px;
+    background-color: #333;
+    border: 2px solid #fff;
+    position: relative;
+}
+
+#player-health-bar {
+    width: 100%;
+    height: 100%;
+    background-color: #e74c3c;
+    transition: width 0.2s;
+}
+
+#player-health-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+}
+
+/* Inventory & Panels */
+.panel {
+    background-color: #2c3e50;
+    border: 2px solid #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 10px;
+}
+
+.panel-container {
+    display: flex;
+    gap: 20px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(8, 48px);
+    grid-gap: 4px;
+    margin-top: 10px;
+}
+
+.slot {
+    width: 48px;
+    height: 48px;
+    background-color: #34495e;
+    border: 1px solid #7f8c8d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.slot:hover {
+    border-color: #f1c40f;
+}
+
+.item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+}
+
+.equipment-slot {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #34495e;
+    border: 1px solid #7f8c8d;
+    cursor: pointer;
+}
+
+/* Tooltip */
+#tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.9);
+    border: 1px solid #fff;
+    padding: 10px;
+    border-radius: 5px;
+    pointer-events: none;
+    z-index: 200;
+    max-width: 200px;
+}
+
+.tooltip-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.tooltip-stat {
+    font-size: 12px;
+    color: #bdc3c7;
+}
+
+/* Loot Screen */
+.loot-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-width: 400px;
+    margin-bottom: 20px;
+}
+
+.loot-item {
+    padding: 10px;
+    background-color: #34495e;
+    border: 1px solid #7f8c8d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.loot-item:hover {
+    background-color: #465b6e;
+}
+
+button {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+button:hover {
+    background-color: #3498db;
+}
