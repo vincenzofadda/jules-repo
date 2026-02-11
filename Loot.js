@@ -1,5 +1,5 @@
 import { Entity } from './Entity.js';
-import { ItemGenerator } from './Item.js';
+import { ItemGenerator, RARITY } from './Item.js';
 import { TILE_SIZE } from './constants.js';
 
 export class Loot extends Entity {
