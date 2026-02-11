@@ -8,7 +8,10 @@ export const RARITY = {
 
 export const ITEM_TYPE = {
     WEAPON: 'weapon',
-    ARMOR: 'armor',
+    HELMET: 'helmet',
+    CHESTPLATE: 'chestplate',
+    LEGGINGS: 'leggings',
+    BOOTS: 'boots',
     POTION: 'potion', // Optional
     CURRENCY: 'currency'
 };
@@ -24,9 +27,20 @@ export class Item {
 }
 
 export class ItemGenerator {
-    static generateItem(level = 1, forceRarity = null) {
+    static generateItem(level = 1, forceRarity = null, forceType = null) {
         const rarity = forceRarity || this.rollRarity();
-        const type = Math.random() < 0.5 ? ITEM_TYPE.WEAPON : ITEM_TYPE.ARMOR;
+
+        let type = forceType;
+        if (!type) {
+            // 50% Weapon, 50% Armor (split evenly)
+            const roll = Math.random();
+            if (roll < 0.5) {
+                type = ITEM_TYPE.WEAPON;
+            } else {
+                const armorTypes = [ITEM_TYPE.HELMET, ITEM_TYPE.CHESTPLATE, ITEM_TYPE.LEGGINGS, ITEM_TYPE.BOOTS];
+                type = armorTypes[Math.floor(Math.random() * armorTypes.length)];
+            }
+        }
 
         let name = "";
         let stats = {};
@@ -36,9 +50,16 @@ export class ItemGenerator {
             const baseDamage = 5 * level;
             stats.damage = Math.floor(baseDamage * rarity.multiplier);
         } else {
-            name = `${rarity.name} Armor`;
-            const baseDefense = 2 * level;
-            stats.defense = Math.floor(baseDefense * rarity.multiplier);
+            // Adjust name based on type
+            const typeName = type.charAt(0).toUpperCase() + type.slice(1);
+            name = `${rarity.name} ${typeName}`;
+
+            // Adjust defense based on slot (optional balance)
+            let baseDefense = 2 * level;
+            if (type === ITEM_TYPE.CHESTPLATE) baseDefense *= 1.5;
+            if (type === ITEM_TYPE.HELMET) baseDefense *= 1.2;
+
+            stats.defense = Math.max(1, Math.floor(baseDefense * rarity.multiplier));
         }
 
         return new Item(name, type, rarity, stats);
@@ -46,10 +67,11 @@ export class ItemGenerator {
 
     static rollRarity() {
         const roll = Math.random();
-        if (roll < 0.60) return RARITY.COMMON;
-        if (roll < 0.85) return RARITY.UNCOMMON;
-        if (roll < 0.95) return RARITY.RARE;
-        if (roll < 0.99) return RARITY.EPIC;
+        // Common 40%, Uncommon 30% (->0.7), Rare 15% (->0.85), Epic 10% (->0.95), Legendary 5% (->1.0)
+        if (roll < 0.40) return RARITY.COMMON;
+        if (roll < 0.70) return RARITY.UNCOMMON;
+        if (roll < 0.85) return RARITY.RARE;
+        if (roll < 0.95) return RARITY.EPIC;
         return RARITY.LEGENDARY;
     }
 

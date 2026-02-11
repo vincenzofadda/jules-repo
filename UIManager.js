@@ -12,8 +12,6 @@ export class UIManager {
         // Elements
         this.inventoryGrid = document.getElementById('inventory-grid');
         this.charInventoryGrid = document.getElementById('char-inventory-grid');
-        this.equipWeapon = document.getElementById('equip-weapon');
-        this.equipArmor = document.getElementById('equip-armor');
         this.statDamage = document.getElementById('stat-damage');
         this.statDefense = document.getElementById('stat-defense');
         this.lootList = document.getElementById('loot-list');
@@ -163,7 +161,7 @@ export class UIManager {
         }
 
         // Equipment slots events
-        ['weapon', 'armor'].forEach(type => {
+        ['weapon', 'helmet', 'chestplate', 'leggings', 'boots'].forEach(type => {
             const slot = document.querySelector(`.equipment-slot[data-slot="${type}"]`);
             slot.addEventListener('click', () => this.handleEquipSlotClick(type));
             slot.addEventListener('mouseover', (e) => this.showTooltip(e, type, 'equipment'));
@@ -210,7 +208,10 @@ export class UIManager {
         };
 
         renderSlot('weapon', eq.weapon);
-        renderSlot('armor', eq.armor);
+        renderSlot('helmet', eq.helmet);
+        renderSlot('chestplate', eq.chestplate);
+        renderSlot('leggings', eq.leggings);
+        renderSlot('boots', eq.boots);
 
         // Stats
         let dmg = this.game.player.damage;
@@ -219,7 +220,11 @@ export class UIManager {
 
         let def = 0;
         if (eq.weapon) def += eq.weapon.stats.defense || 0;
-        if (eq.armor) def += eq.armor.stats.defense || 0;
+        if (eq.helmet) def += eq.helmet.stats.defense || 0;
+        if (eq.chestplate) def += eq.chestplate.stats.defense || 0;
+        if (eq.leggings) def += eq.leggings.stats.defense || 0;
+        if (eq.boots) def += eq.boots.stats.defense || 0;
+
         this.statDefense.innerText = def;
     }
 
@@ -258,7 +263,7 @@ export class UIManager {
         if (!item) return;
 
         // Equip logic
-        if (item.type === ITEM_TYPE.WEAPON || item.type === ITEM_TYPE.ARMOR) {
+        if (Object.values(ITEM_TYPE).includes(item.type) && item.type !== ITEM_TYPE.CURRENCY && item.type !== ITEM_TYPE.POTION) {
             this.equipItem(index);
         }
 

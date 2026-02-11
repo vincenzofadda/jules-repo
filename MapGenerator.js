@@ -62,19 +62,37 @@ export class MapGenerator {
     }
 
     generateSurface(map) {
+        // Fill entire surface with Grass
+        map.tiles.fill(TILE.GRASS);
+
         const cx = Math.floor(map.width / 2);
         const cy = Math.floor(map.height / 2);
-        const radius = 15;
 
-        // Clear a circular area for the surface entrance
-        this.fillCircle(map, cx, cy, radius, TILE.FLOOR);
+        // Simple House Structure around entrance
+        // Walls
+        this.fillRect(map, cx - 4, cy - 4, 9, 9, TILE.HOUSE_WALL);
+        // Floor inside house
+        this.fillRect(map, cx - 3, cy - 3, 7, 7, TILE.FLOOR);
 
-        // Place entrance to mine in the center
+        // Door
+        this.setTile(map, cx, cy + 4, TILE.FLOOR);
+
+        // Place entrance to mine in the center of the house
         this.setTile(map, cx, cy, TILE.STAIRS_DOWN);
         map.stairsDown = { x: cx, y: cy };
 
-        // Player starts near the entrance
-        map.playerStart = { x: cx - 5, y: cy };
+        // Player starts outside the house
+        map.playerStart = { x: cx, y: cy + 6 };
+
+        // Maybe some trees (Walls) scattered
+        for(let i=0; i<50; i++) {
+             const tx = Math.floor(Math.random() * map.width);
+             const ty = Math.floor(Math.random() * map.height);
+             // Don't block house area
+             if (Math.abs(tx - cx) > 10 || Math.abs(ty - cy) > 10) {
+                 this.setTile(map, tx, ty, TILE.HOUSE_WALL); // Wood as tree trunk
+             }
+        }
     }
 
     generateCave(map, depth) {

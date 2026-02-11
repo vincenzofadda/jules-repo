@@ -96,5 +96,11 @@ export class Enemy extends Entity {
         const hpPercent = this.health / this.maxHealth;
         ctx.fillStyle = '#e74c3c';
         ctx.fillRect(x, y, barWidth * hpPercent, barHeight);
+
+        // Text
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${Math.ceil(this.health)}/${this.maxHealth}`, x + barWidth / 2, y - 2);
     }
 }

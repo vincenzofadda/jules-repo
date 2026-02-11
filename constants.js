@@ -6,5 +6,7 @@ export const TILE = {
     WALL: 0,
     FLOOR: 1,
     STAIRS_DOWN: 2,
-    STAIRS_UP: 3
+    STAIRS_UP: 3,
+    GRASS: 4,
+    HOUSE_WALL: 5
 };

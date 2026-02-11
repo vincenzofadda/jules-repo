@@ -53,7 +53,7 @@ class Game {
 
         // Give starter weapon if new game
         if (!this.player.equipment.weapon) {
-             const starterSword = ItemGenerator.generateItem(1, RARITY.COMMON);
+             const starterSword = ItemGenerator.generateItem(1, RARITY.COMMON, 'weapon');
              starterSword.name = "Rusty Sword";
              this.player.inventory.add(starterSword);
              this.uiManager.equipItem(0);
@@ -248,6 +248,12 @@ class Game {
                     this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
                 } else if (tile === TILE.STAIRS_UP) {
                     this.ctx.fillStyle = '#2ecc71'; // Green Stairs
+                    this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
+                } else if (tile === TILE.GRASS) {
+                    this.ctx.fillStyle = '#27ae60'; // Green Grass
+                    this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
+                } else if (tile === TILE.HOUSE_WALL) {
+                    this.ctx.fillStyle = '#795548'; // Brown Wood
                     this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
                 }
             }

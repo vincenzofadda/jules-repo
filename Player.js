@@ -5,13 +5,16 @@ import { TILE_SIZE } from './constants.js';
 export class Player extends Entity {
     constructor(x, y) {
         super(x, y, 32, '#3498db');
-        this.speed = 200; // pixels per second
+        this.speed = 300; // Increased speed (was 200)
         this.maxHealth = 100;
         this.health = 100;
         this.inventory = new Inventory(48); // 6x8
         this.equipment = {
             weapon: null,
-            armor: null
+            helmet: null,
+            chestplate: null,
+            leggings: null,
+            boots: null
         };
         this.attackRange = 60;
         this.attackCooldown = 0;
@@ -22,8 +25,11 @@ export class Player extends Entity {
     takeDamage(amount) {
         // Apply defense from equipment
         let defense = 0;
-        if (this.equipment.armor) defense += this.equipment.armor.stats.defense || 0;
-        if (this.equipment.weapon) defense += this.equipment.weapon.stats.defense || 0; // Rare weapons might have defense
+        if (this.equipment.helmet) defense += this.equipment.helmet.stats.defense || 0;
+        if (this.equipment.chestplate) defense += this.equipment.chestplate.stats.defense || 0;
+        if (this.equipment.leggings) defense += this.equipment.leggings.stats.defense || 0;
+        if (this.equipment.boots) defense += this.equipment.boots.stats.defense || 0;
+        if (this.equipment.weapon) defense += this.equipment.weapon.stats.defense || 0;
 
         const damageTaken = Math.max(1, amount - defense);
 
