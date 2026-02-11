@@ -32,6 +32,17 @@ export class UIManager {
 
         // Initial Render
         this.createInventorySlots();
+
+        // Drag and Drop State
+        this.draggedItemIndex = null;
+        this.draggedSource = null; // 'inventory'
+
+        // Global Drop Zone (for deletion)
+        // Bind to screens
+        [this.inventoryScreen, this.characterScreen].forEach(screen => {
+            screen.addEventListener('dragover', (e) => e.preventDefault());
+            screen.addEventListener('drop', (e) => this.handleScreenDrop(e));
+        });
     }
 
     handleInput(e) {
@@ -150,6 +161,10 @@ export class UIManager {
             slot.addEventListener('mouseover', (e) => this.showTooltip(e, i, 'inventory'));
             slot.addEventListener('mouseout', () => this.hideTooltip());
 
+            // Add Drag Events
+            slot.addEventListener('dragover', (e) => this.handleSlotDragOver(e));
+            slot.addEventListener('drop', (e) => this.handleSlotDrop(e, i));
+
             this.inventoryGrid.appendChild(slot);
 
             // Clone for Character Screen
@@ -157,6 +172,11 @@ export class UIManager {
             charSlot.addEventListener('click', () => this.handleSlotClick(i)); // Re-bind
             charSlot.addEventListener('mouseover', (e) => this.showTooltip(e, i, 'inventory'));
             charSlot.addEventListener('mouseout', () => this.hideTooltip());
+
+            // Add Drag Events to Clone
+            charSlot.addEventListener('dragover', (e) => this.handleSlotDragOver(e));
+            charSlot.addEventListener('drop', (e) => this.handleSlotDrop(e, i));
+
             this.charInventoryGrid.appendChild(charSlot);
         }
 
@@ -188,9 +208,61 @@ export class UIManager {
                 icon.style.color = '#000';
                 icon.style.fontWeight = 'bold';
 
+                // Make draggable
+                icon.draggable = true;
+                icon.addEventListener('dragstart', (e) => {
+                    this.draggedItemIndex = index;
+                    this.draggedSource = 'inventory';
+                    e.dataTransfer.effectAllowed = 'move';
+                    // Hide tooltip
+                    this.hideTooltip();
+                });
+
                 slot.appendChild(icon);
             }
         });
+    }
+
+    handleSlotDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    handleSlotDrop(e, targetIndex) {
+        e.preventDefault();
+        e.stopPropagation(); // Stop bubbling to screen
+
+        if (this.draggedSource === 'inventory' && this.draggedItemIndex !== null) {
+            // Swap
+            this.game.player.inventory.swap(this.draggedItemIndex, targetIndex);
+
+            // Re-render
+            if (this.isInventoryOpen) this.renderInventory(this.inventoryGrid);
+            if (this.isCharacterOpen) this.renderInventory(this.charInventoryGrid);
+
+            this.draggedItemIndex = null;
+            this.draggedSource = null;
+        }
+    }
+
+    handleScreenDrop(e) {
+        e.preventDefault();
+
+        // If dropped here (and not stopped by slot drop), delete item
+        if (this.draggedSource === 'inventory' && this.draggedItemIndex !== null) {
+            // Check if dropped outside ANY slot (which it is, since slot drop stops prop)
+            const confirmDelete = confirm("Delete item?");
+            if (confirmDelete) {
+                this.game.player.inventory.remove(this.draggedItemIndex);
+
+                // Re-render
+                if (this.isInventoryOpen) this.renderInventory(this.inventoryGrid);
+                if (this.isCharacterOpen) this.renderInventory(this.charInventoryGrid);
+            }
+
+            this.draggedItemIndex = null;
+            this.draggedSource = null;
+        }
     }
 
     renderEquipment() {
