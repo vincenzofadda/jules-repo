@@ -5,7 +5,7 @@ import { Chest } from './Loot.js';
 import { Input } from './Input.js';
 import { UIManager } from './UIManager.js';
 import { ItemGenerator, RARITY } from './Item.js';
-import { Assets } from './Assets.js';
+import { TextureManager } from './TextureManager.js';
 import { TILE, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from './constants.js';
 
 class Game {
@@ -24,7 +24,7 @@ class Game {
 
         this.uiManager = new UIManager(this);
 
-        this.textures = Assets.generateTextures();
+        this.textureManager = new TextureManager();
 
         this.isRunning = false;
         this.lastTime = 0;
@@ -344,20 +344,7 @@ class Game {
                 const posX = x * TILE_SIZE;
                 const posY = y * TILE_SIZE;
 
-                if (tile === TILE.WALL) {
-                    this.ctx.drawImage(this.textures.wall, posX, posY, TILE_SIZE, TILE_SIZE);
-                } else if (tile === TILE.FLOOR) {
-                    this.ctx.drawImage(this.textures.floor, posX, posY, TILE_SIZE, TILE_SIZE);
-                    // Optional: Darken slightly to distinguish from walls? No, textures handle it.
-                } else if (tile === TILE.STAIRS_DOWN) {
-                    this.ctx.drawImage(this.textures.stairsDown, posX, posY, TILE_SIZE, TILE_SIZE);
-                } else if (tile === TILE.STAIRS_UP) {
-                    this.ctx.drawImage(this.textures.stairsUp, posX, posY, TILE_SIZE, TILE_SIZE);
-                } else if (tile === TILE.GRASS) {
-                    this.ctx.drawImage(this.textures.grass, posX, posY, TILE_SIZE, TILE_SIZE);
-                } else if (tile === TILE.HOUSE_WALL) {
-                    this.ctx.drawImage(this.textures.houseWall, posX, posY, TILE_SIZE, TILE_SIZE);
-                }
+                this.textureManager.drawTile(this.ctx, tile, posX, posY);
             }
         }
 
