@@ -5,6 +5,7 @@ import { Chest } from './Loot.js';
 import { Input } from './Input.js';
 import { UIManager } from './UIManager.js';
 import { ItemGenerator, RARITY } from './Item.js';
+import { Assets } from './Assets.js';
 import { TILE, TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from './constants.js';
 
 class Game {
@@ -22,6 +23,8 @@ class Game {
         this.player = new Player(0, 0);
 
         this.uiManager = new UIManager(this);
+
+        this.textures = Assets.generateTextures();
 
         this.isRunning = false;
         this.lastTime = 0;
@@ -342,26 +345,18 @@ class Game {
                 const posY = y * TILE_SIZE;
 
                 if (tile === TILE.WALL) {
-                    this.ctx.fillStyle = '#222'; // Dark Wall
-                    this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
+                    this.ctx.drawImage(this.textures.wall, posX, posY, TILE_SIZE, TILE_SIZE);
                 } else if (tile === TILE.FLOOR) {
-                    this.ctx.fillStyle = '#444'; // Floor
-                    this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
-                    // Add grid lines for debugging
-                    this.ctx.strokeStyle = '#333';
-                    this.ctx.strokeRect(posX, posY, TILE_SIZE, TILE_SIZE);
+                    this.ctx.drawImage(this.textures.floor, posX, posY, TILE_SIZE, TILE_SIZE);
+                    // Optional: Darken slightly to distinguish from walls? No, textures handle it.
                 } else if (tile === TILE.STAIRS_DOWN) {
-                    this.ctx.fillStyle = '#8e44ad'; // Purple Stairs
-                    this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
+                    this.ctx.drawImage(this.textures.stairsDown, posX, posY, TILE_SIZE, TILE_SIZE);
                 } else if (tile === TILE.STAIRS_UP) {
-                    this.ctx.fillStyle = '#2ecc71'; // Green Stairs
-                    this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
+                    this.ctx.drawImage(this.textures.stairsUp, posX, posY, TILE_SIZE, TILE_SIZE);
                 } else if (tile === TILE.GRASS) {
-                    this.ctx.fillStyle = '#27ae60'; // Green Grass
-                    this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
+                    this.ctx.drawImage(this.textures.grass, posX, posY, TILE_SIZE, TILE_SIZE);
                 } else if (tile === TILE.HOUSE_WALL) {
-                    this.ctx.fillStyle = '#795548'; // Brown Wood
-                    this.ctx.fillRect(posX, posY, TILE_SIZE, TILE_SIZE);
+                    this.ctx.drawImage(this.textures.houseWall, posX, posY, TILE_SIZE, TILE_SIZE);
                 }
             }
         }
