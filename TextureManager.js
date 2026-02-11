@@ -81,8 +81,32 @@ export class TextureManager {
             }
         } else if (tileType === TILE.FLOOR) {
             if (this.sheetLoaded) {
-                // Cave Floor - (0, 64) -> Row 3
-                ctx.drawImage(this.sheet, 0, 64, 32, 32, x, y, TILE_SIZE, TILE_SIZE);
+                // Deterministic variation based on position
+                // Normalize X/Y to grid coords for hash
+                const tx = Math.floor(x / TILE_SIZE);
+                const ty = Math.floor(y / TILE_SIZE);
+                const hash = Math.abs(Math.sin(tx * 12.9898 + ty * 78.233) * 43758.5453) % 1;
+
+                let sx, sy;
+
+                if (hash < 0.80) {
+                    // Floor 1 (80%): x=8, y=5
+                    sx = 8; sy = 5;
+                } else if (hash < 0.85) {
+                    // Floor 2 (5%): x=128, y=160
+                    sx = 128; sy = 160;
+                } else if (hash < 0.90) {
+                    // Floor 3 (5%): x=160, y=160
+                    sx = 160; sy = 160;
+                } else if (hash < 0.95) {
+                    // Floor 4 (5%): x=160, y=192
+                    sx = 160; sy = 192;
+                } else {
+                    // Floor 5 (5%): x=128, y=192
+                    sx = 128; sy = 192;
+                }
+
+                ctx.drawImage(this.sheet, sx, sy, 32, 32, x, y, TILE_SIZE, TILE_SIZE);
             } else {
                 ctx.fillStyle = '#7f8c8d';
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
