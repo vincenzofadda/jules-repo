@@ -154,23 +154,40 @@ export class MapGenerator {
             const endY = Math.floor(startY + dy * branchLength);
             this.fillCircle(map, endX, endY, 5, TILE.FLOOR);
 
+            // Boss Branch Logic (20% chance)
+            const isBossBranch = Math.random() < 0.20;
+            const keyId = isBossBranch ? Math.random().toString(36).substr(2, 9) : null;
+
             // Place Chest
             map.entities.push({
                 type: 'chest',
                 x: endX,
-                y: endY
+                y: endY,
+                isBossChest: isBossBranch,
+                isLocked: isBossBranch,
+                keyId: keyId
             });
 
             // Spawn Branch Enemies
+            let bossSpawned = false;
             for (let j = 0; j < 2; j++) {
                 const dist = Math.random() * branchLength;
                 const tx = Math.floor(startX + dx * dist);
                 const ty = Math.floor(startY + dy * dist);
+
+                let isBoss = false;
+                if (isBossBranch && !bossSpawned) {
+                    isBoss = true;
+                    bossSpawned = true;
+                }
+
                 map.entities.push({
                     type: 'enemy',
                     x: tx,
                     y: ty,
-                    inLobby: false
+                    inLobby: false,
+                    isBoss: isBoss,
+                    keyToDrop: isBoss ? keyId : null
                 });
             }
         }

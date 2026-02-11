@@ -32,6 +32,11 @@ class Game {
         this.hud = document.getElementById('hud');
         this.playerHealthBar = document.getElementById('player-health-bar');
         this.playerHealthText = document.getElementById('player-health-text');
+        this.dashSegments = [
+            document.getElementById('dash-1'),
+            document.getElementById('dash-2'),
+            document.getElementById('dash-3')
+        ];
 
         // Bind events
         this.startBtn.addEventListener('click', () => this.startGame());
@@ -79,12 +84,18 @@ class Game {
                         ent.y * TILE_SIZE + TILE_SIZE/2 - 16
                     );
                     enemy.inLobby = ent.inLobby;
+                    if (ent.isBoss) {
+                        enemy.makeBoss(ent.keyToDrop);
+                    }
                     this.currentLevel.gameObjects.push(enemy);
                 } else if (ent.type === 'chest') {
                     const chest = new Chest(
                         ent.x * TILE_SIZE,
                         ent.y * TILE_SIZE
                     );
+                    chest.isLocked = ent.isLocked;
+                    chest.keyId = ent.keyId;
+                    chest.isBossChest = ent.isBossChest;
                     this.currentLevel.gameObjects.push(chest);
                 }
             });
@@ -167,7 +178,12 @@ class Game {
                     const dist = Math.sqrt((ent.x - this.player.x)**2 + (ent.y - this.player.y)**2);
                     if (dist < 100) { // Interaction range
                          if (!ent.opened) {
-                             ent.items = ent.open(1); // Generate items
+                             const items = ent.open(1, this.player); // Generate items
+                             if (items === null) {
+                                 alert("Locked! You need a key.");
+                                 return;
+                             }
+                             ent.items = items;
                          }
                          this.uiManager.openLoot(ent);
                          return;
@@ -207,6 +223,27 @@ class Game {
         const hpPercent = Math.max(0, (this.player.health / this.player.maxHealth) * 100);
         this.playerHealthBar.style.width = `${hpPercent}%`;
         this.playerHealthText.innerText = `${Math.ceil(this.player.health)}/${this.player.maxHealth}`;
+
+        // Update Dash UI
+        for (let i = 0; i < 3; i++) {
+            const segment = this.dashSegments[i];
+            if (i < this.player.dashCharges) {
+                segment.classList.add('active');
+                segment.classList.remove('recharging');
+                segment.style.width = '30px';
+            } else if (i === this.player.dashCharges) {
+                // This is the segment currently recharging
+                segment.classList.remove('active');
+                segment.classList.add('recharging');
+                const percent = this.player.dashCooldownTimer / this.player.dashCooldownTime;
+                segment.style.width = `${Math.max(1, percent * 30)}px`;
+            } else {
+                // Empty segments (waiting for previous to fill)
+                segment.classList.remove('active');
+                segment.classList.remove('recharging');
+                segment.style.width = '30px'; // Keep width but low opacity
+            }
+        }
     }
 
     draw() {

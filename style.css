@@ -81,6 +81,7 @@ canvas {
     background-color: #333;
     border: 2px solid #fff;
     position: relative;
+    margin-bottom: 5px;
 }
 
 #player-health-bar {
@@ -97,6 +98,29 @@ canvas {
     transform: translate(-50%, -50%);
     font-weight: bold;
     text-shadow: 1px 1px 2px black;
+}
+
+#dash-bar-container {
+    display: flex;
+    gap: 4px;
+}
+
+.dash-segment {
+    width: 30px;
+    height: 10px;
+    background-color: #3498db;
+    border: 1px solid #fff;
+    opacity: 0.3; /* Default empty/recharging */
+}
+
+.dash-segment.active {
+    opacity: 1.0;
+    box-shadow: 0 0 5px #3498db;
+}
+
+.dash-segment.recharging {
+    background-color: #f39c12; /* Visual feedback for recharging */
+    opacity: 0.6;
 }
 
 /* Inventory & Panels */

@@ -1,5 +1,5 @@
 import { Entity } from './Entity.js';
-import { ItemGenerator } from './Item.js';
+import { ItemGenerator, Item, ITEM_TYPE, RARITY } from './Item.js';
 import { TILE_SIZE } from './constants.js';
 
 export class Enemy extends Entity {
@@ -14,6 +14,18 @@ export class Enemy extends Entity {
         this.attackSpeed = 1.0; // Seconds between attacks
         this.type = 'enemy';
         this.loot = null;
+        this.isBoss = false;
+        this.keyToDrop = null; // If boss
+    }
+
+    makeBoss(keyId) {
+        this.isBoss = true;
+        this.width *= 2;
+        this.height *= 2;
+        this.maxHealth *= 3;
+        this.health = this.maxHealth;
+        this.color = '#c0392b'; // Darker Red
+        this.keyToDrop = keyId;
     }
 
     update(dt, player, map) {
@@ -66,6 +78,14 @@ export class Enemy extends Entity {
             // Generate Loot
             if (!this.loot) {
                 this.loot = [];
+
+                if (this.isBoss && this.keyToDrop) {
+                    // Drop Key
+                    const key = new Item("Boss Key", ITEM_TYPE.KEY, RARITY.EPIC, {});
+                    key.keyId = this.keyToDrop;
+                    this.loot.push(key);
+                }
+
                 const item = ItemGenerator.generateLoot(1); // Level 1 for now
                 if (item) this.loot.push(item);
                 // Maybe some gold?

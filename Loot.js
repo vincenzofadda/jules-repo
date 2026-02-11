@@ -27,27 +27,43 @@ export class Chest extends Entity {
         super(x, y, TILE_SIZE, '#d35400'); // Orange/Brown box
         this.opened = false;
         this.items = [];
+        this.isLocked = false;
+        this.keyId = null;
+        this.isBossChest = false;
     }
 
-    open(level) {
+    // Returns items if successful, null if locked
+    open(level, player) {
         if (this.opened) return [];
+
+        if (this.isLocked) {
+             // Check for key
+             const keyIndex = player.inventory.items.findIndex(i => i && i.keyId === this.keyId);
+             if (keyIndex === -1) {
+                 return null; // Locked and no key
+             }
+             // Consume key
+             player.inventory.remove(keyIndex);
+             this.isLocked = false;
+        }
+
         this.opened = true;
         this.color = '#7f8c8d'; // Grey when opened
 
-        // Generate 4 items, at least 1 rare
         const loot = [];
-        // 1 Guaranteed Rare+
-        // Actually, logic is "at least rare". So Rare, Epic, or Legendary.
-        // I'll force a roll.
 
-        // Wait, ItemGenerator.rollRarity returns rarity based on chance.
-        // I need a way to force min rarity.
-
-        // For simplicity:
-        loot.push(ItemGenerator.generateItem(level, { name: 'Rare', color: '#3498db', multiplier: 1.5 })); // Force Rare
-
-        for (let i = 0; i < 3; i++) {
-            loot.push(ItemGenerator.generateItem(level));
+        if (this.isBossChest) {
+            // Min 6 items, 2 Rare+, 1 Epic+
+            loot.push(ItemGenerator.generateItem(level, RARITY.EPIC));
+            loot.push(ItemGenerator.generateItem(level, RARITY.RARE));
+            loot.push(ItemGenerator.generateItem(level, RARITY.RARE));
+            for(let i=0; i<3; i++) loot.push(ItemGenerator.generateItem(level));
+        } else {
+            // Normal Branch Chest: Min 4 items, 1 Rare+
+            loot.push(ItemGenerator.generateItem(level, RARITY.RARE));
+            for (let i = 0; i < 3; i++) {
+                loot.push(ItemGenerator.generateItem(level));
+            }
         }
 
         return loot;

@@ -13,7 +13,8 @@ export const ITEM_TYPE = {
     LEGGINGS: 'leggings',
     BOOTS: 'boots',
     POTION: 'potion', // Optional
-    CURRENCY: 'currency'
+    CURRENCY: 'currency',
+    KEY: 'key'
 };
 
 export class Item {
