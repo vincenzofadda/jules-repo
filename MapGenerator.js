@@ -32,7 +32,49 @@ export class MapGenerator {
             this.generateCave(map, depth);
         }
 
+        this.calculateTileVariations(map);
+
         return map;
+    }
+
+    calculateTileVariations(map) {
+        map.tileAdjacency = new Array(map.width * map.height).fill(null);
+
+        for (let y = 0; y < map.height; y++) {
+            for (let x = 0; x < map.width; x++) {
+                const idx = y * map.width + x;
+                // Only compute for Floor tiles
+                if (map.tiles[idx] !== TILE.FLOOR) continue;
+
+                const isWall = (dx, dy) => {
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    // Treat out of bounds as Wall
+                    if (nx < 0 || nx >= map.width || ny < 0 || ny >= map.height) return true;
+                    return map.tiles[ny * map.width + nx] === TILE.WALL;
+                };
+
+                const t = isWall(0, -1);
+                const b = isWall(0, 1);
+                const l = isWall(-1, 0);
+                const r = isWall(1, 0);
+                const tl = isWall(-1, -1);
+                const tr = isWall(1, -1);
+                const bl = isWall(-1, 1);
+                const br = isWall(1, 1);
+
+                // Priority: Corners > Edges > Center
+                if (t && l && tl) map.tileAdjacency[idx] = 'TopLeft';
+                else if (t && r && tr) map.tileAdjacency[idx] = 'TopRight';
+                else if (b && r && br) map.tileAdjacency[idx] = 'BottomRight';
+                else if (b && l && bl) map.tileAdjacency[idx] = 'BottomLeft';
+                else if (t) map.tileAdjacency[idx] = 'Top';
+                else if (b) map.tileAdjacency[idx] = 'Bottom';
+                else if (l) map.tileAdjacency[idx] = 'Left';
+                else if (r) map.tileAdjacency[idx] = 'Right';
+                else map.tileAdjacency[idx] = 'Center';
+            }
+        }
     }
 
     setTile(map, x, y, type) {

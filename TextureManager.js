@@ -60,50 +60,58 @@ export class TextureManager {
         return canvas;
     }
 
-    drawTile(ctx, tileType, x, y) {
+    drawTile(ctx, tileType, x, y, adjacency = 'Center') {
         if (tileType === TILE.WALL) {
             if (this.sheetLoaded) {
                 // Cave Wall (Top) - (0, 0)
-                // Actually, let's use the brown block at 0,0 for wall tops?
-                // The prompt image shows:
-                // Row 1 (y=0): Solid Brown
-                // Row 2 (y=32): Solid Brown Top, Stone Bottom
-                // Row 3 (y=64): Stone Floor
-
-                // Let's use (0, 0) for walls
                 ctx.drawImage(this.sheet, 0, 0, 32, 32, x, y, TILE_SIZE, TILE_SIZE);
-
-                // Optional: Check if tile below is floor to draw the "Face" (Row 2)?
-                // That requires context of map. For now, simple mapping.
             } else {
                 ctx.fillStyle = '#2c3e50';
                 ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
             }
         } else if (tileType === TILE.FLOOR) {
             if (this.sheetLoaded) {
-                // Deterministic variation based on position
-                // Normalize X/Y to grid coords for hash
-                const tx = Math.floor(x / TILE_SIZE);
-                const ty = Math.floor(y / TILE_SIZE);
-                const hash = Math.abs(Math.sin(tx * 12.9898 + ty * 78.233) * 43758.5453) % 1;
-
                 let sx, sy;
 
-                if (hash < 0.80) {
-                    // Floor 1 (80%): x=8, y=5
-                    sx = 8; sy = 5;
-                } else if (hash < 0.85) {
-                    // Floor 2 (5%): x=128, y=160
-                    sx = 128; sy = 160;
-                } else if (hash < 0.90) {
-                    // Floor 3 (5%): x=160, y=160
-                    sx = 160; sy = 160;
-                } else if (hash < 0.95) {
-                    // Floor 4 (5%): x=160, y=192
-                    sx = 160; sy = 192;
+                if (adjacency && adjacency !== 'Center') {
+                    // Wall-Adjacent Floors
+                    switch(adjacency) {
+                        case 'Top': sx = 34; sy = 0; break;
+                        case 'Right': sx = 61; sy = 32; break;
+                        case 'Left': sx = 3; sy = 32; break;
+                        case 'Bottom': sx = 35; sy = 61; break;
+                        case 'TopLeft': sx = 3; sy = 0; break;
+                        case 'TopRight': sx = 61; sy = 0; break;
+                        case 'BottomRight': sx = 61; sy = 61; break;
+                        case 'BottomLeft': sx = 3; sy = 61; break;
+                        default: sx = 8; sy = 5;
+                    }
                 } else {
-                    // Floor 5 (5%): x=128, y=192
-                    sx = 128; sy = 192;
+                    // Center Floors (Random)
+                    // Deterministic variation based on position
+                    const tx = Math.floor(x / TILE_SIZE);
+                    const ty = Math.floor(y / TILE_SIZE);
+                    const hash = Math.abs(Math.sin(tx * 12.9898 + ty * 78.233) * 43758.5453) % 1;
+
+                    if (hash < 0.90) {
+                        // Floor 1 (90%): x=8, y=5
+                        sx = 8; sy = 5;
+                    } else {
+                        // Floors 2-5 (10% total, 2.5% each)
+                        if (hash < 0.925) {
+                            // Floor 2: x=128, y=160
+                            sx = 128; sy = 160;
+                        } else if (hash < 0.95) {
+                            // Floor 3: x=160, y=160
+                            sx = 160; sy = 160;
+                        } else if (hash < 0.975) {
+                            // Floor 4: x=160, y=192
+                            sx = 160; sy = 192;
+                        } else {
+                            // Floor 5: x=128, y=192
+                            sx = 128; sy = 192;
+                        }
+                    }
                 }
 
                 ctx.drawImage(this.sheet, sx, sy, 32, 32, x, y, TILE_SIZE, TILE_SIZE);

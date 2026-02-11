@@ -340,11 +340,13 @@ class Game {
             for (let x = startCol; x <= endCol; x++) {
                 if (x < 0 || x >= this.currentLevel.width || y < 0 || y >= this.currentLevel.height) continue;
 
-                const tile = this.currentLevel.tiles[y * this.currentLevel.width + x];
+                const idx = y * this.currentLevel.width + x;
+                const tile = this.currentLevel.tiles[idx];
+                const adjacency = this.currentLevel.tileAdjacency ? this.currentLevel.tileAdjacency[idx] : null;
                 const posX = x * TILE_SIZE;
                 const posY = y * TILE_SIZE;
 
-                this.textureManager.drawTile(this.ctx, tile, posX, posY);
+                this.textureManager.drawTile(this.ctx, tile, posX, posY, adjacency);
             }
         }
 
