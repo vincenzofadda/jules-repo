@@ -43,6 +43,12 @@ class Game {
         window.addEventListener('resize', () => this.resizeCanvas());
         this.canvas.addEventListener('mousedown', (e) => this.handleCanvasClick(e));
 
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'e') {
+                this.handleInteraction();
+            }
+        });
+
         // Initial Draw
         this.drawStartScreen();
     }
@@ -96,6 +102,13 @@ class Game {
                     chest.isLocked = ent.isLocked;
                     chest.keyId = ent.keyId;
                     chest.isBossChest = ent.isBossChest;
+
+                    if (chest.isBossChest) {
+                        chest.width = TILE_SIZE * 2;
+                        chest.height = TILE_SIZE * 2;
+                        chest.color = '#f1c40f'; // Gold
+                    }
+
                     this.currentLevel.gameObjects.push(chest);
                 }
             });
@@ -177,15 +190,7 @@ class Game {
                     // Check distance
                     const dist = Math.sqrt((ent.x - this.player.x)**2 + (ent.y - this.player.y)**2);
                     if (dist < 100) { // Interaction range
-                         if (!ent.opened) {
-                             const items = ent.open(1, this.player); // Generate items
-                             if (items === null) {
-                                 alert("Locked! You need a key.");
-                                 return;
-                             }
-                             ent.items = items;
-                         }
-                         this.uiManager.openLoot(ent);
+                         this.openChest(ent);
                          return;
                     }
                 } else if (ent instanceof Enemy && ent.dead) {
@@ -217,6 +222,71 @@ class Game {
         if (prevDepth >= 0) {
             this.loadLevel(prevDepth);
         }
+    }
+
+    handleInteraction() {
+        if (!this.currentLevel || this.player.dead) return;
+
+        const px = this.player.x + this.player.width / 2;
+        const py = this.player.y + this.player.height / 2;
+
+        let nearestDist = Infinity;
+        let nearestAction = null;
+
+        // Check Entities (Chests, Dead Enemies)
+        this.currentLevel.gameObjects.forEach(ent => {
+             const cx = ent.x + ent.width / 2;
+             const cy = ent.y + ent.height / 2;
+             const dist = Math.sqrt((cx - px)**2 + (cy - py)**2);
+
+             if (dist < 100 && dist < nearestDist) {
+                 if (ent instanceof Chest) {
+                     nearestDist = dist;
+                     nearestAction = () => this.openChest(ent);
+                 } else if (ent instanceof Enemy && ent.dead) {
+                     nearestDist = dist;
+                     nearestAction = () => this.uiManager.openLoot(ent);
+                 }
+             }
+        });
+
+        // Check Tiles (Stairs)
+        // Check player's current tile
+        const tileX = Math.floor(px / TILE_SIZE);
+        const tileY = Math.floor(py / TILE_SIZE);
+        if (tileX >= 0 && tileX < this.currentLevel.width && tileY >= 0 && tileY < this.currentLevel.height) {
+            const tile = this.currentLevel.tiles[tileY * this.currentLevel.width + tileX];
+            // Distance to tile center
+            const cx = tileX * TILE_SIZE + TILE_SIZE / 2;
+            const cy = tileY * TILE_SIZE + TILE_SIZE / 2;
+            const dist = Math.sqrt((cx - px)**2 + (cy - py)**2);
+
+            if (dist < 60 && dist < nearestDist) {
+                 if (tile === TILE.STAIRS_DOWN) {
+                     nearestDist = dist;
+                     nearestAction = () => this.tryDescendLevel();
+                 } else if (tile === TILE.STAIRS_UP) {
+                     nearestDist = dist;
+                     nearestAction = () => this.ascendLevel();
+                 }
+            }
+        }
+
+        if (nearestAction) {
+            nearestAction();
+        }
+    }
+
+    openChest(ent) {
+         if (!ent.opened) {
+             const items = ent.open(1, this.player);
+             if (items === null) {
+                 alert("Locked! You need a key.");
+                 return;
+             }
+             ent.items = items;
+         }
+         this.uiManager.openLoot(ent);
     }
 
     updateHUD() {

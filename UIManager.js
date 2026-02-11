@@ -238,24 +238,31 @@ export class UIManager {
             items = this.currentLootSource.items;
         }
 
-        items.forEach((item, index) => {
-            const el = document.createElement('div');
-            el.classList.add('loot-item');
-            el.innerText = item.name;
-            el.style.color = item.rarity.color;
-            el.addEventListener('click', () => {
-                // Take specific item
-                if (this.game.player.inventory.add(item)) {
-                    // Remove from source
-                    items.splice(index, 1);
-                    this.renderLoot(); // Refresh
-                    if (items.length === 0) this.closeLoot();
-                } else {
-                    alert("Inventory Full!");
-                }
+        if (items.length === 0) {
+             const el = document.createElement('div');
+             el.innerText = "Empty";
+             el.style.color = '#7f8c8d';
+             this.lootList.appendChild(el);
+        } else {
+            items.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.classList.add('loot-item');
+                el.innerText = item.name;
+                el.style.color = item.rarity.color;
+                el.addEventListener('click', () => {
+                    // Take specific item
+                    if (this.game.player.inventory.add(item)) {
+                        // Remove from source
+                        items.splice(index, 1);
+                        this.renderLoot(); // Refresh
+                        if (items.length === 0) this.closeLoot();
+                    } else {
+                        alert("Inventory Full!");
+                    }
+                });
+                this.lootList.appendChild(el);
             });
-            this.lootList.appendChild(el);
-        });
+        }
     }
 
     handleSlotClick(index) {

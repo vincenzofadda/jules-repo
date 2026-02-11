@@ -75,8 +75,13 @@ export class Chest extends Entity {
 
         // Draw lock
         if (!this.opened) {
-            ctx.fillStyle = '#f1c40f';
-            ctx.fillRect(this.x + 14, this.y + 14, 4, 4);
+            // Adjust lock position based on size
+            const lockSize = this.isBossChest ? 12 : 6;
+            const cx = this.x + this.width / 2 - lockSize / 2;
+            const cy = this.y + this.height / 2 - lockSize / 2;
+
+            ctx.fillStyle = this.isLocked ? '#e74c3c' : '#f1c40f'; // Red if locked, Gold if not (or maybe just standard keyhole?)
+            ctx.fillRect(cx, cy, lockSize, lockSize);
         }
     }
 }
