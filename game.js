@@ -382,5 +382,5 @@ class Game {
 
 // Initialize Game
 window.addEventListener('load', () => {
-    const game = new Game();
+    window.game = new Game();
 });

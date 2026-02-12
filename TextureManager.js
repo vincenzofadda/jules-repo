@@ -79,11 +79,11 @@ export class TextureManager {
                         case 'Top': sx = 34; sy = 0; break;
                         case 'Right': sx = 61; sy = 32; break;
                         case 'Left': sx = 3; sy = 32; break;
-                        case 'Bottom': sx = 35; sy = 61; break;
+                        case 'Bottom': sx = 160; sy = 416; break;
                         case 'TopLeft': sx = 3; sy = 0; break;
                         case 'TopRight': sx = 61; sy = 0; break;
-                        case 'BottomRight': sx = 61; sy = 61; break;
-                        case 'BottomLeft': sx = 3; sy = 61; break;
+                        case 'BottomRight': sx = 192; sy = 416; break;
+                        case 'BottomLeft': sx = 134; sy = 416; break;
                         default: sx = 8; sy = 5;
                     }
                 } else {
