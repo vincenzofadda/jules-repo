@@ -111,7 +111,13 @@ export class TextureManager {
             // But better: The user likely wants the *visual* of a chest.
             // Let's just use 164, 32.
 
-            ctx.drawImage(this.assetsSheet, 164, 32, 32, 28, x, y + 4, 32, 28);
+            // Draw slightly larger (1.25x) and centered at the bottom
+            const destW = 40;
+            const destH = 35;
+            const destX = x + (TILE_SIZE - destW) / 2;
+            const destY = y + (TILE_SIZE - destH); // Align bottom
+
+            ctx.drawImage(this.assetsSheet, 164, 32, 32, 28, destX, destY, destW, destH);
         } else {
             // Fallback
             ctx.fillStyle = '#d35400';
