@@ -10,6 +10,14 @@ export class TextureManager {
             this.sheetLoaded = true;
         };
 
+        this.wallSheet = new Image();
+        this.wallSheet.src = 'assets/wall-transition-tiles-32x32.png';
+        this.wallSheetLoaded = false;
+
+        this.wallSheet.onload = () => {
+            this.wallSheetLoaded = true;
+        };
+
         // Procedural fallbacks for surface (Grass, House)
         this.textures = {
             grass: this.createColorTexture('#27ae60'),
@@ -62,8 +70,11 @@ export class TextureManager {
 
     drawTile(ctx, tileType, x, y, adjacency = 'Center') {
         if (tileType === TILE.WALL) {
-            if (this.sheetLoaded) {
-                // Cave Wall (Top) - (0, 0)
+            if (this.wallSheetLoaded) {
+                // New Wall Tileset (x=32, y=32)
+                ctx.drawImage(this.wallSheet, 32, 32, 32, 32, x, y, TILE_SIZE, TILE_SIZE);
+            } else if (this.sheetLoaded) {
+                 // Fallback to old wall logic if new sheet fails (or loading)
                 ctx.drawImage(this.sheet, 0, 0, 32, 32, x, y, TILE_SIZE, TILE_SIZE);
             } else {
                 ctx.fillStyle = '#2c3e50';
