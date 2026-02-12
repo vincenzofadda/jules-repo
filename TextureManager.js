@@ -18,6 +18,14 @@ export class TextureManager {
             this.wallSheetLoaded = true;
         };
 
+        this.assetsSheet = new Image();
+        this.assetsSheet.src = 'assets/assets-all.png';
+        this.assetsLoaded = false;
+
+        this.assetsSheet.onload = () => {
+            this.assetsLoaded = true;
+        };
+
         // Procedural fallbacks for surface (Grass, House)
         this.textures = {
             grass: this.createColorTexture('#27ae60'),
@@ -66,6 +74,49 @@ export class TextureManager {
             ctx.fillRect(4 + i*2, 4 + i*2, 24 - i*4, 24 - i*4);
         }
         return canvas;
+    }
+
+    drawChest(ctx, x, y, opened) {
+        // Draw floor tile underneath (Center variation by default)
+        this.drawTile(ctx, TILE.FLOOR, x, y, 'Center');
+
+        if (this.assetsLoaded) {
+            // Chest Sprite: x=164, y=32, 32x28 (Closed)
+            // If opened, maybe use next sprite?
+            // The prompt says "troque o quadrado do baú para o tileset que está em (x=164 y=32)".
+            // Assuming this is the closed chest.
+            // If opened, let's just use the same sprite or tint it for now as requested?
+            // Actually, usually open chest is next to it. Let's look at standard spritesheets.
+            // But prompt specifically asked for (164, 32).
+            // Let's use 164, 32 for closed.
+            // If opened, let's assume it's the one below it at 164, 64 (32+32) or just use the closed one if not specified.
+            // Prompt: "troque o quadrado do baú para o tileset que está em (x=164 y=32)".
+
+            // Draw centered horizontally, bottom aligned vertically in the tile
+            // Tile height 32. Sprite height 28. Y offset = 4.
+            const sy = opened ? 64 : 32; // Trying a guess for opened chest? No, stick to prompt instructions first.
+            // Prompt didn't specify open chest sprite.
+            // However, common sense: "Opened" state needs visual feedback.
+            // But strict instruction: use (164, 32).
+            // I'll stick to (164, 32) for now. If I can't guess opened, I'll just draw it as is.
+            // Actually, let's assume 164, 32 is the base.
+
+            // Wait, looking at the previous Chest.render logic, it drew a lock if closed.
+            // Now we use a sprite.
+
+            // Let's check if the user provided image has an open chest.
+            // I can't see the image.
+            // I will use (164, 32) for closed.
+            // For open, I'll use the same sprite but maybe darken it? Or just leave it as is.
+            // But better: The user likely wants the *visual* of a chest.
+            // Let's just use 164, 32.
+
+            ctx.drawImage(this.assetsSheet, 164, 32, 32, 28, x, y + 4, 32, 28);
+        } else {
+            // Fallback
+            ctx.fillStyle = '#d35400';
+            ctx.fillRect(x + 4, y + 4, 24, 24);
+        }
     }
 
     drawTile(ctx, tileType, x, y, adjacency = 'Center') {

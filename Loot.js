@@ -69,19 +69,30 @@ export class Chest extends Entity {
         return loot;
     }
 
-    render(ctx) {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x + 4, this.y + 4, this.width - 8, this.height - 8);
+    render(ctx, textureManager) {
+        if (textureManager && textureManager.assetsLoaded) {
+             textureManager.drawChest(ctx, this.x, this.y, this.opened);
 
-        // Draw lock
-        if (!this.opened) {
-            // Adjust lock position based on size
-            const lockSize = this.isBossChest ? 12 : 6;
-            const cx = this.x + this.width / 2 - lockSize / 2;
-            const cy = this.y + this.height / 2 - lockSize / 2;
+             // Draw Lock Indicator if locked (overlay)
+             if (this.isLocked && !this.opened) {
+                 ctx.fillStyle = '#e74c3c';
+                 ctx.fillRect(this.x + 14, this.y + 16, 4, 4);
+             }
+        } else {
+            // Fallback
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x + 4, this.y + 4, this.width - 8, this.height - 8);
 
-            ctx.fillStyle = this.isLocked ? '#e74c3c' : '#f1c40f'; // Red if locked, Gold if not (or maybe just standard keyhole?)
-            ctx.fillRect(cx, cy, lockSize, lockSize);
+            // Draw lock
+            if (!this.opened) {
+                // Adjust lock position based on size
+                const lockSize = this.isBossChest ? 12 : 6;
+                const cx = this.x + this.width / 2 - lockSize / 2;
+                const cy = this.y + this.height / 2 - lockSize / 2;
+
+                ctx.fillStyle = this.isLocked ? '#e74c3c' : '#f1c40f';
+                ctx.fillRect(cx, cy, lockSize, lockSize);
+            }
         }
     }
 }

@@ -352,11 +352,11 @@ class Game {
 
         // Draw Entities
         this.currentLevel.gameObjects.forEach(ent => {
-            ent.render(this.ctx);
+            ent.render(this.ctx, this.textureManager);
         });
 
         // Draw Player
-        this.player.render(this.ctx);
+        this.player.render(this.ctx, this.textureManager);
 
         this.ctx.restore();
     }
@@ -382,5 +382,5 @@ class Game {
 
 // Initialize Game
 window.addEventListener('load', () => {
-    const game = new Game();
+    window.game = new Game();
 });
