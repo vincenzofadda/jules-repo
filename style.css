@@ -22,6 +22,7 @@ body, html {
 canvas {
     background-color: #000;
     display: block;
+    image-rendering: pixelated;
 }
 
 #ui-layer {

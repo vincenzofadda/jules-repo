@@ -29,6 +29,11 @@ class Game {
         this.isRunning = false;
         this.lastTime = 0;
 
+        // Cache related
+        this.levelCache = document.createElement('canvas');
+        this.levelCacheCtx = this.levelCache.getContext('2d');
+        this.cacheDirty = false;
+
         // UI References
         this.startScreen = document.getElementById('start-screen');
         this.startBtn = document.getElementById('start-btn');
@@ -117,6 +122,10 @@ class Game {
             });
         }
 
+        // Cache the level for performance
+        this.cacheLevel();
+        this.cacheDirty = true; // Mark dirty to ensure update loop checks it
+
         // Set player position from map spawn point (convert tile -> pixel)
         // Center player on tile
         if (this.currentLevel.playerStart) {
@@ -129,8 +138,40 @@ class Game {
         }
     }
 
+    cacheLevel() {
+        if (!this.currentLevel) return;
+
+        this.levelCache.width = this.currentLevel.width * TILE_SIZE;
+        this.levelCache.height = this.currentLevel.height * TILE_SIZE;
+
+        // Disable smoothing on cache context too
+        this.levelCacheCtx.imageSmoothingEnabled = false;
+
+        for (let y = 0; y < this.currentLevel.height; y++) {
+            for (let x = 0; x < this.currentLevel.width; x++) {
+                const idx = y * this.currentLevel.width + x;
+                const tile = this.currentLevel.tiles[idx];
+                const adjacency = this.currentLevel.tileAdjacency ? this.currentLevel.tileAdjacency[idx] : null;
+                const posX = x * TILE_SIZE;
+                const posY = y * TILE_SIZE;
+
+                this.textureManager.drawTile(this.levelCacheCtx, tile, posX, posY, adjacency);
+            }
+        }
+    }
+
     update(dt) {
         if (!this.currentLevel) return;
+
+        // Check if textures loaded and cache needs update
+        if (this.textureManager.sheetLoaded && this.textureManager.wallSheetLoaded && this.textureManager.assetsLoaded && this.cacheDirty) {
+             this.cacheLevel();
+             this.cacheDirty = false; // Only re-cache once after load
+        }
+        // Force re-cache if first run and textures just loaded
+        if ((!this.textureManager.sheetLoaded || !this.textureManager.wallSheetLoaded) && !this.cacheDirty) {
+             this.cacheDirty = true; // Mark dirty so we re-cache when they load
+        }
 
         const enemies = this.currentLevel.gameObjects.filter(e => e instanceof Enemy);
         this.player.update(dt, this.input, this.currentLevel, enemies);
@@ -324,30 +365,34 @@ class Game {
         this.ctx.fillStyle = '#111';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+        // Ensure main context is pixelated
+        this.ctx.imageSmoothingEnabled = false;
+
         if (!this.currentLevel) return;
 
         this.ctx.save();
-        this.ctx.translate(-this.camera.x, -this.camera.y);
 
-        // Draw Map
-        // Optimize: Only draw visible tiles
-        const startCol = Math.floor(this.camera.x / TILE_SIZE);
-        const endCol = startCol + (this.canvas.width / TILE_SIZE) + 1;
-        const startRow = Math.floor(this.camera.y / TILE_SIZE);
-        const endRow = startRow + (this.canvas.height / TILE_SIZE) + 1;
+        // Integer camera position to prevent sub-pixel rendering (lines artifact)
+        const camX = Math.floor(this.camera.x);
+        const camY = Math.floor(this.camera.y);
 
-        for (let y = startRow; y <= endRow; y++) {
-            for (let x = startCol; x <= endCol; x++) {
-                if (x < 0 || x >= this.currentLevel.width || y < 0 || y >= this.currentLevel.height) continue;
+        this.ctx.translate(-camX, -camY);
 
-                const idx = y * this.currentLevel.width + x;
-                const tile = this.currentLevel.tiles[idx];
-                const adjacency = this.currentLevel.tileAdjacency ? this.currentLevel.tileAdjacency[idx] : null;
-                const posX = x * TILE_SIZE;
-                const posY = y * TILE_SIZE;
+        // Draw Cached Map
+        // Draw the visible portion of the cached map
+        // Source: (camX, camY)
+        // Dest: (camX, camY) because we translated the context
+        // Ensure source coordinates are within bounds
+        const sx = Math.max(0, camX);
+        const sy = Math.max(0, camY);
+        const sw = Math.min(this.canvas.width, this.levelCache.width - sx);
+        const sh = Math.min(this.canvas.height, this.levelCache.height - sy);
 
-                this.textureManager.drawTile(this.ctx, tile, posX, posY, adjacency);
-            }
+        if (sw > 0 && sh > 0) {
+            this.ctx.drawImage(this.levelCache,
+                sx, sy, sw, sh,
+                sx, sy, sw, sh
+            );
         }
 
         // Draw Entities
