@@ -68,7 +68,7 @@ class Game {
     }
 
     startGame() {
-        this.loadLevel(0); // Start at Surface
+        this.loadLevel(0, 'start'); // Start at Surface
 
         // Give starter weapon if new game
         if (!this.player.equipment.weapon) {
@@ -85,7 +85,7 @@ class Game {
         requestAnimationFrame((ts) => this.loop(ts));
     }
 
-    loadLevel(depth) {
+    loadLevel(depth, spawnAt = 'start') {
         this.currentLevel = this.mapGenerator.getLevel(depth);
 
         // Convert map entities to game objects if not already done
@@ -126,11 +126,18 @@ class Game {
         this.cacheLevel();
         this.cacheDirty = true; // Mark dirty to ensure update loop checks it
 
-        // Set player position from map spawn point (convert tile -> pixel)
-        // Center player on tile
-        if (this.currentLevel.playerStart) {
-            this.player.x = this.currentLevel.playerStart.x * TILE_SIZE + TILE_SIZE / 2 - this.player.width/2;
-            this.player.y = this.currentLevel.playerStart.y * TILE_SIZE + TILE_SIZE / 2 - this.player.height/2;
+        // Set player position
+        let targetPos = this.currentLevel.playerStart;
+
+        if (spawnAt === 'stairsUp' && this.currentLevel.stairsUp) {
+            targetPos = this.currentLevel.stairsUp;
+        } else if (spawnAt === 'stairsDown' && this.currentLevel.stairsDown) {
+            targetPos = this.currentLevel.stairsDown;
+        }
+
+        if (targetPos) {
+            this.player.x = targetPos.x * TILE_SIZE + TILE_SIZE / 2 - this.player.width/2;
+            this.player.y = targetPos.y * TILE_SIZE + TILE_SIZE / 2 - this.player.height/2;
         } else {
             // Fallback center of map
             this.player.x = (this.currentLevel.width * TILE_SIZE) / 2;
@@ -258,13 +265,13 @@ class Game {
         }
 
         const nextDepth = this.currentLevel.depth + 1;
-        this.loadLevel(nextDepth);
+        this.loadLevel(nextDepth, 'stairsUp');
     }
 
     ascendLevel() {
         const prevDepth = this.currentLevel.depth - 1;
         if (prevDepth >= 0) {
-            this.loadLevel(prevDepth);
+            this.loadLevel(prevDepth, 'stairsDown');
         }
     }
 

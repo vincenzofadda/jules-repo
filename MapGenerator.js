@@ -142,17 +142,29 @@ export class MapGenerator {
         const cy = Math.floor(map.height / 2);
 
         // 1. Massive Lobby
-        const lobbyRadius = 12 + Math.floor(Math.random() * 5); // 12-16 radius
+        // Increased radius for "Massive" feel
+        const lobbyRadius = 15 + Math.floor(Math.random() * 5); // 15-20 radius
         this.fillCircle(map, cx, cy, lobbyRadius, TILE.FLOOR);
 
-        // Place Stairs Down (Locked initially logic handled by Game)
+        // Place Stairs Down in Center
         this.setTile(map, cx, cy, TILE.STAIRS_DOWN);
         map.stairsDown = { x: cx, y: cy };
 
-        // Spawn Lobby Enemies
-        for (let i = 0; i < 3; i++) {
+        // Place Stairs Up near edge (safe zone)
+        // Ensure it's within the floor area
+        const upX = cx - (lobbyRadius - 3);
+        const upY = cy;
+        this.setTile(map, upX, upY, TILE.STAIRS_UP);
+        map.stairsUp = { x: upX, y: upY };
+        map.playerStart = { x: upX, y: upY }; // Start on stairs up
+
+        // Spawn Lobby Enemies (Guardians)
+        // Must be killed to progress
+        const numLobbyEnemies = 4 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < numLobbyEnemies; i++) {
              const angle = Math.random() * Math.PI * 2;
-             const r = Math.random() * (lobbyRadius - 2);
+             // Spawn between center and edge
+             const r = 5 + Math.random() * (lobbyRadius - 6);
              map.entities.push({
                  type: 'enemy',
                  x: cx + Math.cos(angle) * r,
@@ -161,75 +173,63 @@ export class MapGenerator {
              });
         }
 
-        // Place Stairs Up (Back to prev level) - slightly offset
-        const upX = cx - 8;
-        const upY = cy;
-        this.setTile(map, upX, upY, TILE.STAIRS_UP);
-        map.stairsUp = { x: upX, y: upY };
-        map.playerStart = { x: upX, y: upY }; // Start on stairs up
-
-        // 2. Branches
-        const numBranches = 4 + Math.floor(Math.random() * 3); // 4-6 branches
-        const branchLength = 25 + Math.floor(Math.random() * 10); // 25-35 length
+        // 2. Long Branches
+        const numBranches = 4 + Math.floor(Math.random() * 2); // 4-5 branches
+        const branchLength = 35 + Math.floor(Math.random() * 10); // 35-45 length (Long)
         const branchWidth = 4;
 
         for (let i = 0; i < numBranches; i++) {
-            const angle = (i / numBranches) * Math.PI * 2 + (Math.random() * 0.5 - 0.25);
+            // Distribute branches evenly
+            const angle = (i / numBranches) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
             const dx = Math.cos(angle);
             const dy = Math.sin(angle);
 
             // Start from edge of lobby
-            let startX = cx + dx * (lobbyRadius - 2);
-            let startY = cy + dy * (lobbyRadius - 2);
+            let startX = cx + dx * (lobbyRadius - 1);
+            let startY = cy + dy * (lobbyRadius - 1);
 
             // Dig corridor
-            for (let dist = 0; dist < branchLength; dist++) {
-                const tx = Math.floor(startX + dx * dist);
-                const ty = Math.floor(startY + dy * dist);
+            // Use a slightly wandering path for natural feel but generally straight
+            let currentX = startX;
+            let currentY = startY;
 
-                // Draw a wide corridor (brush)
-                this.fillCircle(map, tx, ty, branchWidth / 2, TILE.FLOOR);
+            for (let dist = 0; dist < branchLength; dist++) {
+                this.fillCircle(map, Math.floor(currentX), Math.floor(currentY), branchWidth / 2, TILE.FLOOR);
+
+                // Slight wander
+                currentX += dx + (Math.random() * 0.4 - 0.2);
+                currentY += dy + (Math.random() * 0.4 - 0.2);
             }
 
-            // End Room
-            const endX = Math.floor(startX + dx * branchLength);
-            const endY = Math.floor(startY + dy * branchLength);
-            this.fillCircle(map, endX, endY, 5, TILE.FLOOR);
+            // End Room (for Chest)
+            const endX = Math.floor(currentX);
+            const endY = Math.floor(currentY);
+            this.fillCircle(map, endX, endY, 4, TILE.FLOOR);
 
-            // Boss Branch Logic (20% chance)
-            const isBossBranch = Math.random() < 0.20;
-            const keyId = isBossBranch ? Math.random().toString(36).substr(2, 9) : null;
-
-            // Place Chest
+            // Place Treasure Chest
+            // Chest logic will handle the loot generation (min 4 items, 1 rare)
             map.entities.push({
                 type: 'chest',
                 x: endX,
                 y: endY,
-                isBossChest: isBossBranch,
-                isLocked: isBossBranch,
-                keyId: keyId
+                isBossChest: false, // Normal chest (Min 4 items, 1 Rare)
+                isLocked: false // Not locking them for now unless specified
             });
 
             // Spawn Branch Enemies
-            let bossSpawned = false;
-            for (let j = 0; j < 2; j++) {
-                const dist = Math.random() * branchLength;
-                const tx = Math.floor(startX + dx * dist);
-                const ty = Math.floor(startY + dy * dist);
+            const enemiesInBranch = 3 + Math.floor(Math.random() * 3);
+            for (let j = 0; j < enemiesInBranch; j++) {
+                // Place randomly along the branch
+                const dist = 5 + Math.random() * (branchLength - 10);
+                const tx = startX + dx * dist + (Math.random() * 4 - 2);
+                const ty = startY + dy * dist + (Math.random() * 4 - 2);
 
-                let isBoss = false;
-                if (isBossBranch && !bossSpawned) {
-                    isBoss = true;
-                    bossSpawned = true;
-                }
-
+                // Ensure it's on floor (simple check usually passes if corridor is wide enough)
                 map.entities.push({
                     type: 'enemy',
                     x: tx,
                     y: ty,
-                    inLobby: false,
-                    isBoss: isBoss,
-                    keyToDrop: isBoss ? keyId : null
+                    inLobby: false
                 });
             }
         }

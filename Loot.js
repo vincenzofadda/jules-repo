@@ -34,7 +34,8 @@ export class Chest extends Entity {
 
     // Returns items if successful, null if locked
     open(level, player) {
-        if (this.opened) return [];
+        // If already opened, return existing items
+        if (this.opened) return this.items;
 
         if (this.isLocked) {
              // Check for key
@@ -66,11 +67,12 @@ export class Chest extends Entity {
             }
         }
 
+        this.items = loot;
         return loot;
     }
 
     render(ctx, textureManager) {
-        if (textureManager && textureManager.assetsLoaded) {
+        if (textureManager) {
              textureManager.drawChest(ctx, this.x, this.y, this.opened);
 
              // Draw Lock Indicator if locked (overlay)
@@ -79,7 +81,7 @@ export class Chest extends Entity {
                  ctx.fillRect(this.x + 14, this.y + 16, 4, 4);
              }
         } else {
-            // Fallback
+            // Fallback (Used if TextureManager isn't provided, which shouldn't happen)
             ctx.fillStyle = this.color;
             ctx.fillRect(this.x + 4, this.y + 4, this.width - 8, this.height - 8);
 
